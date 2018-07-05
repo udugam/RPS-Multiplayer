@@ -10,3 +10,17 @@ var config = {
 firebase.initializeApp(config);
 
 var database = firebase.database();
+
+//Declares a listener for the a change of values in the root directory of the firebase
+database.ref().on("value", function(snapshot) {    
+
+})
+
+//Declares a click listener for when the player name is submitted
+$('#submitName').on('click', function() {
+    var name = $('#playerName').val().trim();
+
+    database.ref().set({
+        playerName: name
+    })
+})
