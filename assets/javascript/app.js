@@ -15,8 +15,7 @@ var playerCount = 0;
 function initDatabase(databaseRef) {
     database
         .ref()
-        .once('value')
-        .then(function(snapshot) {
+        .on('value', function(snapshot) {
             if (snapshot.child('players').exists()) {
                 snapshot.child('players').forEach(function(childSnap) {
                     $('#oponent').text(childSnap.val().playerName+" is waiting for an opponent")
@@ -36,8 +35,14 @@ database.ref().on("value", function(snapshot) {
 
 //Declares a click listener for when the player name is submitted
 $('#submitName').on('click', function() {
+    var inputNameDiv = $('#playerName')
+    var submitNameButton = $(this)
     var name = $('#playerName').val().trim();
     var count = playerCount;
+
+   inputNameDiv.detach();
+   submitNameButton.detach();
+   $('#player').text(name)
 
     if (count < 2) {
         count++;
@@ -52,6 +57,8 @@ $('#submitName').on('click', function() {
             numPlayers: count
         })
     }
+
+
 })
 
 initDatabase(database);
