@@ -17,7 +17,11 @@ function initDatabase(databaseRef) {
         .ref()
         .once('value')
         .then(function(snapshot) {
-            if (!snapshot.child('players').exists()) {
+            if (snapshot.child('players').exists()) {
+                snapshot.child('players').forEach(function(childSnap) {
+                    $('#oponent').text(childSnap.val().playerName+" is waiting for an opponent")
+                })
+            } else {
                 database.ref().set({
                     numPlayers: 0
                 })
