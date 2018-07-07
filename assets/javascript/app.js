@@ -12,53 +12,25 @@ firebase.initializeApp(config);
 var database = firebase.database();
 var playerCount = 0; 
 
-function initDatabase(databaseRef) {
+//On pageload, check database for players
+checkDatabase(database);
+
+function checkDatabase() {
     database
         .ref()
         .on('value', function(snapshot) {
-            if (snapshot.child('players').exists()) {
-                snapshot.child('players').forEach(function(childSnap) {
-                    $('#oponent').text(childSnap.val().playerName+" is waiting for an opponent")
-                })
-            } else {
-                database.ref().set({
-                    numPlayers: 0
-                })
+            //If there are no players in the database, call emptyGame function
+            if(snapshot.val()===null) {
+                emptyGame();
             }
+
+            //Else if player1 is missing, call missingPlayer(playerNum) function 
+
         })
 }
 
-//Declares a listener for the change of values in the players path of the database
-database.ref().on("value", function(snapshot) {
-    playerCount = snapshot.val().numPlayers;
-})
+function emptyGame() {
+    $('#announcement-topic').text("Game Empty");
+    $('#announcement').text("No one is here to play. Enter your name on either side and wait for another player.")
+}
 
-//Declares a click listener for when the player name is submitted
-$('#submitName').on('click', function() {
-    var inputNameDiv = $('#playerName')
-    var submitNameButton = $(this)
-    var name = $('#playerName').val().trim();
-    var count = playerCount;
-
-   inputNameDiv.detach();
-   submitNameButton.detach();
-   $('#player').text(name)
-
-    if (count < 2) {
-        count++;
-        database.ref('players').push({
-            playerName: name,
-            wins: 0,
-            losses: 0,
-            ties: 0,
-            selection: ""
-        })
-        database.ref().update({
-            numPlayers: count
-        })
-    }
-
-
-})
-
-initDatabase(database);
