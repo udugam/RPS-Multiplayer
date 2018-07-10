@@ -50,175 +50,217 @@ $('body').on("click", "#playerSelection", function() {
 //Function Declarations
 function checkDatabase() {
     database
-        .ref('players')
-        .on('value', function(snapshot) {
-            var players = snapshot.val();
-            //If there are no players in the database, call emptyGame function
-            if(players===null) {
-                emptyGame();
-            } 
-            //Else there are players present in the database and the page elements should be updated
-            //based on the individual session storage id's of each instance of the page 
-            else {
-                var numPlayers = Object.keys(players).length;
-                for (var key in players) {
-                    (sessionStorage.getItem('ID')===key) ? playerInstance(players[key],numPlayers) : observerInstance(players[key],numPlayers)
-                }
-                checkForSelections(players);
+    .ref('players')
+    .on('value', function(snapshot) {
+        var players = snapshot.val();
+        //If there are no players in the database, call emptyGame function
+        if(players===null) {
+            emptyGame();
+        } 
+        //Else there are players present in the database and the page elements should be updated
+        //based on the individual session storage id's of each instance of the page 
+        else {
+            var numPlayers = Object.keys(players).length;
+            for (var key in players) {
+                (sessionStorage.getItem('ID')===key) ? playerInstance(players[key],numPlayers) : observerInstance(players[key],numPlayers)
             }
-        })
-    }
+            checkForSelections(players);
+        }
+    })
+}
     
-    function emptyGame() {
+function emptyGame() {
+    renderPlayerNameInput();
+    $('#announcement-topic').text("Game Empty");
+    $('#announcement').text("No one is here to play. Enter your name to the left and wait for another player.")
+    $('#opponent').text("Waiting for opponent");
+}
+    
+//This function renders an name input box for a player to enter their name
+function renderPlayerNameInput() {
+    $('#player').html("<input id='player'>");
+}
+    
+//This function renders messages to the page when a player is waiting for an opponent
+function renderPlayerWaiting(playerData) {
+    if (sessionStorage.getItem('ID')==playerData.id) {
+        $('#announcement-topic').text("Waiting For Opponent");
+        $('#announcement').text("Once an opponent joins, their name will be displayed");
+        $('#opponent').text("Waiting for an opponent...");
+    } else {
+        $('#announcement-topic').text("Oponent Ready");
+        $('#announcement').text("Enter your name to start playing");
+        $('#opponent').text(playerData.name+" is ready to play");
+    }
+}
+
+function renderPlayerPresent(playerData) {
+    $('#opponent').text(playerData.name)
+}
+
+//This function populates a player's information into the player area 
+function renderPlayerData(playerData) {
+    $('#player').text(playerData.name);
+}
+
+
+function startGame() {
+    gameInProgress = true
+    addSelectionButton();
+    $('#announcement-topic').text("Choose Rock, Paper, or Scissors");
+    $('#announcement').text("Use the left and right arrows to make your selection, then press Submit");
+}
+
+function randomID() {
+    return Math.floor(Math.random()*1000)
+}
+
+function storeID(id) {
+    sessionStorage.setItem("ID", id);
+}
+
+function addSelectionButton() {
+    $('#playerOptions').append("<button type='button' id='playerSelection' class='btn btn-outline-secondary'>Select!</button>")
+}
+
+function playerInstance(playerData,numPlayers) {
+    renderPlayerData(playerData);
+    if (numPlayers===2) {
+        gameInProgress? null: startGame();
+    } else {
+        renderPlayerWaiting(playerData);
+    }
+}
+
+function observerInstance(playerData, numPlayers) {
+    if (numPlayers==1) {
+        renderPlayerWaiting(playerData);
         renderPlayerNameInput();
-        $('#announcement-topic').text("Game Empty");
-        $('#announcement').text("No one is here to play. Enter your name to the left and wait for another player.")
-        $('#opponent').text("Waiting for opponent");
+    } else {
+        renderPlayerPresent(playerData);
     }
-    
-    //This function renders an name input box for a player to enter their name
-    function renderPlayerNameInput() {
-        $('#player').html("<input id='player'>");
-    }
-    
-    //This function renders messages to the page when a player is waiting for an opponent
-    function renderPlayerWaiting(playerData) {
-        if (sessionStorage.getItem('ID')==playerData.id) {
-            $('#announcement-topic').text("Waiting For Opponent");
-            $('#announcement').text("Once an opponent joins, their name will be displayed");
-            $('#opponent').text("Waiting for an opponent...");
-        } else {
-            $('#announcement-topic').text("Oponent Ready");
-            $('#announcement').text("Enter your name to start playing");
-            $('#opponent').text(playerData.name+" is ready to play");
-        }
-    }
+    //Add condition here for observers of the game
+}
 
-    function renderPlayerPresent(playerData) {
-        $('#opponent').text(playerData.name)
-    }
+function checkForSelections(players) {
+    var playerSelections = []
     
-    //This function populates a player's information into the player area 
-    function renderPlayerData(playerData) {
-        $('#player').text(playerData.name);
-    }
-    
-
-    function startGame() {
-        gameInProgress = true;
-        addSelectionButton();
-        $('#announcement-topic').text("Choose Rock, Paper, or Scissors");
-        $('#announcement').text("Use the left and right arrows to make your selection, then press Submit");
-    }
-    
-    function randomID() {
-        return Math.floor(Math.random()*1000)
-    }
-    
-    function storeID(id) {
-        sessionStorage.setItem("ID", id);
-    }
-    
-    function addSelectionButton() {
-        $('#playerOptions').append("<button type='button' id='playerSelection' class='btn btn-outline-secondary'>Select!</button>")
-    }
-    
-    function playerInstance(playerData,numPlayers) {
-        renderPlayerData(playerData);
-        if (numPlayers===2) {
-            gameInProgress? null: startGame();
-        } else {
-            renderPlayerWaiting(playerData);
-        }
-    }
-    
-    function observerInstance(playerData, numPlayers) {
-        if (numPlayers==1) {
-            renderPlayerWaiting(playerData);
-            renderPlayerNameInput();
-        } else {
-            renderPlayerPresent(playerData);
-        }
-        //Add condition here for observers of the game
-    }
-
-    function checkForSelections(players) {
-        var playerSelections = []
+    for (key in players) {
+        console.log(players[key])
         
-        for (key in players) {
-            console.log(players[key])
-            
-            //if a player has made a selection != to "", then update the UI
-            if(players[key].selection != "") {
-                playerSelections.push({
-                    id: players[key].id,
-                    selection: players[key].selection
-                })
-                playerSelectionMade(players[key])
-            }
-        }
-
-        if(playerSelections.length==2) {
-            determineResult(playerSelections, players)
+        //if a player has made a selection != to "", then update the UI
+        if(players[key].selection != "") {
+            playerSelections.push({
+                id: players[key].id,
+                selection: players[key].selection
+            })
+            playerSelectionMade(players[key])
         }
     }
 
-    function playerSelectionMade(playerData) {
-        (sessionStorage.getItem('ID')==playerData.id) ? null : $('#opponent').text(playerData.name+" has made a selection!")
+    if(playerSelections.length==2) {
+        determineResult(playerSelections, players)
     }
+}
 
-    function determineResult(selectionsArray, playersData) {
-        selectionsArray.forEach(function(element) {
-            if(sessionStorage.getItem('ID')==element.id) { //if the player instance, then render the selected option on the page
-                $('.active').removeClass('active');
-                $('#'+element.selection).addClass('active');
-            } else { //else render the selected option to the opponents div
-                $('#opponentSelection').html(
-                    "<img class='d-block w-100' src='./assets/images/"+element.selection+".png'>"
-                )
-            }
+function playerSelectionMade(playerData) {
+    (sessionStorage.getItem('ID')==playerData.id) ? null : $('#opponent').text(playerData.name+" has made a selection!")
+}
+
+function determineResult(selectionsArray, playersData) {
+    selectionsArray.forEach(function(element) {
+        if(sessionStorage.getItem('ID')==element.id) { //if the player instance, then render the selected option on the page
+            $('.active').removeClass('active');
+            $('#'+element.selection).addClass('active');
+        } else { //else render the selected option to the opponents div
+            $('#opponentSelection').html(
+                "<img class='d-block w-100' src='./assets/images/"+element.selection+".png'>"
+            )
+        }
+    })
+
+    //determine result
+    if (selectionsArray[0].selection==selectionsArray[1].selection) {
+        renderResults('tie',playersData) //This condition is for a tie
+    } else if (selectionsArray[0].selection=="rock" || selectionsArray[1].selection=="rock" 
+    && 
+    selectionsArray[1].selection=="scissors" || selectionsArray[0].selection=="scissors") {
+        var winnerIndex; 
+        selectionsArray.forEach(function(element,index) {
+            (element.selection=='rock') ? winnerIndex=index : null
         })
+        renderResults(selectionsArray[winnerIndex], playersData)     
+    } else if (selectionsArray[0].selection=="rock" || selectionsArray[1].selection=="rock"
+    &&
+    selectionsArray[0].selection=="paper" || selectionsArray[1].selection=="paper") {
+        var winnerIndex; 
+        selectionsArray.forEach(function(element,index) {
+            (element.selection=='paper') ? winnerIndex=index : null
+        })
+        renderResults(selectionsArray[winnerIndex], playersData)
+    } else if (selectionsArray[0].selection=="paper" || selectionsArray[1].selection=="paper"
+    && 
+    selectionsArray[0].selection=="scissors" || selectionsArray[1].selection=="scissors") {
+        var winnerIndex; 
+        selectionsArray.forEach(function(element,index) {
+            (element.selection=='scissors') ? winnerIndex=index : null
+        })
+        renderResults(selectionsArray[winnerIndex],playersData)
+    }
+}
 
-        console.log(selectionsArray)
+function renderResults(winnerID, playersData) {
+    var playerID = sessionStorage.getItem('ID');
+    if (winnerID=='tie') {
+        for (var key in playersData) {
+            if(key == playerID) {
+                var ties = playersData[key].ties+1
+                database.ref('players/'+playerID).update({
+                    ties: ties,
+                    selection: ""
+                })
+            }
+        }
+        $('#announcement-topic').text("TIE!");
+        $('#announcement').text("Next Round comming up...");
+        setTimeout(startGame,3000);
+    } else if (winnerID.id == playerID) {
+        incrementWins(playerID, playersData)
+        $('#announcement-topic').text("You Won!");
+        $('#announcement').text("Next Round comming up...");
+        setTimeout(startGame,3000);
+    } else if (winnerID.id != playerID) {
+        incrementLosses(playerID, playersData)
+        $('#announcement-topic').text("You Lost!");
+        $('#announcement').text("Next Round comming up...");
+        setTimeout(startGame,3000);
+    }
+    console.log(winnerID,playersData);
+}
 
-        //determine result
-        if (selectionsArray[0].selection==selectionsArray[1].selection) {
-            renderResults('tie',playersData) //This condition is for a tie
-        } else if (selectionsArray[0].selection=="rock" || selectionsArray[1].selection=="rock" 
-        && 
-        selectionsArray[1].selection=="scissors" || selectionsArray[0].selection=="scissors") {
-            var winnerIndex; 
-            selectionsArray.forEach(function(element,index) {
-                (element.selection=='rock') ? winnerIndex=index : null
+function incrementWins(playerID, playersData) {
+    for (var key in playersData) {
+        if(key == playerID) {
+            var wins = playersData[key].wins+1
+            database.ref('players/'+playerID).update({
+                wins: wins,
+                selection: ""
             })
-            renderResults(selectionsArray[winnerIndex], playersData)     
-        } else if (selectionsArray[0].selection=="rock" || selectionsArray[1].selection=="rock"
-        &&
-        selectionsArray[0].selection=="paper" || selectionsArray[1].selection=="paper") {
-            var winnerIndex; 
-            selectionsArray.forEach(function(element,index) {
-                (element.selection=='paper') ? winnerIndex=index : null
-            })
-            renderResults(selectionsArray[winnerIndex], playersData)
-        } else if (selectionsArray[0].selection=="paper" || selectionsArray[1].selection=="paper"
-        && 
-        selectionsArray[0].selection=="scissors" || selectionsArray[1].selection=="scissors") {
-            var winnerIndex; 
-            selectionsArray.forEach(function(element,index) {
-                (element.selection=='scissors') ? winnerIndex=index : null
-            })
-            renderResults(selectionsArray[winnerIndex],playersData)
         }
     }
+}
 
-    function renderResults(winnerID, playersData) {
-        if (winnerID=='tie') {
-            $('#announcement-topic').text("TIE!");
-            $('#announcement').text("Next Round comming up...");
-            //Insert timeout here
+function incrementLosses(playerID, playersData) {
+    for (var key in playersData) {
+        if(key == playerID) {
+            var losses = playersData[key].losses+1
+            database.ref('players/'+playerID).update({
+                losses: losses,
+                selection: ""
+            })
         }
-        console.log(winnerID,playersData);
     }
+}
 
 
     
