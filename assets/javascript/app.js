@@ -12,6 +12,8 @@ firebase.initializeApp(config);
 var database = firebase.database();
 var gameInProgress = false; 
 
+var TIME_TO_NEXT_ROUND = 5000;
+
 //On pageload, check database for players
 checkDatabase(database);
 
@@ -108,6 +110,7 @@ function renderPlayerData(playerData) {
 function startGame() {
     gameInProgress = true
     $('#opponentSelection').empty()
+    $('#opponentStatus').empty()
     addSelectionButton();
     $('#announcement-topic').text("Choose Rock, Paper, or Scissors");
     $('#announcement').text("Use the left and right arrows to make your selection, then press Submit");
@@ -166,7 +169,7 @@ function checkForSelections(players) {
 }
 
 function playerSelectionMade(playerData) {
-    (sessionStorage.getItem('ID')==playerData.id) ? null : $('#opponentSelection').text(playerData.name+" has made a selection!")
+    (sessionStorage.getItem('ID')==playerData.id) ? null : $('#opponentStatus').text(playerData.name+" has made a selection!")
 }
 
 function determineResult(selectionsArray, playersData) {
@@ -226,17 +229,17 @@ function renderResults(winnerID, playersData) {
         }
         $('#announcement-topic').text("TIE!");
         $('#announcement').text("Next Round comming up...");
-        setTimeout(startGame,3000);
+        setTimeout(startGame,TIME_TO_NEXT_ROUND);
     } else if (winnerID.id == playerID) {
         incrementWins(playerID, playersData)
         $('#announcement-topic').text("You Won!");
         $('#announcement').text("Next Round comming up...");
-        setTimeout(startGame,3000);
+        setTimeout(startGame,TIME_TO_NEXT_ROUND);
     } else if (winnerID.id != playerID) {
         incrementLosses(playerID, playersData)
         $('#announcement-topic').text("You Lost!");
         $('#announcement').text("Next Round comming up...");
-        setTimeout(startGame,3000);
+        setTimeout(startGame,TIME_TO_NEXT_ROUND);
     }
 }
 
