@@ -9,27 +9,30 @@
     <title>Rock, Paper, Scissors!</title>
 </head>
 <body>
-    <nav class="navbar navbar-light bg-light">
-        <span class="navbar-brand mb-0 h1">Rock, Paper, Scissors</span>
+    <nav class="navbar navbar-light bg-light text-center">
+        <div class='container'>
+            <h1>Multiplayer RPS</h1>
+        </div>
     </nav>
     <div class='container'>
         <div class='row'>
             <div class='col-3'>
                 <div class="card">
                     <div class="card-body">
-                        <div class="card-body">
+                        <div class="card-body text-center">
                             <p class="card-title" id="player"></p>
+                            <p class="card-title" id="playerStats"></p>
                         </div>
                         <div id="playerOptions" class="carousel slide" data-ride="carousel" data-interval="false">
                             <div class="carousel-inner">
                                 <div class="carousel-item active" data-selection='rock' id='rock'>
-                                <img class="d-block w-100" src="./assets/images/rock.png" alt="First slide">
+                                    <img class="d-block w-100" src="./assets/images/rock.png" alt="First slide">
                                 </div>
                                 <div class="carousel-item" data-selection='paper' id='paper'>
-                                <img class="d-block w-100" src="./assets/images/paper.png" alt="Second slide">
+                                    <img class="d-block w-100" src="./assets/images/paper.png" alt="Second slide">
                                 </div>
                                 <div class="carousel-item" data-selection='scissors' id='scissors'>
-                                <img class="d-block w-100" src="./assets/images/scissors.png" alt="Third slide">
+                                    <img class="d-block w-100" src="./assets/images/scissors.png" alt="Third slide">
                                 </div>
                             </div>
                             <a class="carousel-control-prev" href="#playerOptions" role="button" data-slide="prev">
@@ -41,22 +44,24 @@
                                 <span class="sr-only">Next</span>
                             </a>
                         </div>
+                        <div id='selectionButton'></div>
                     </div>
                 </div>
             </div>
             <div class='col-6'>
                 <div class="card">
                     <div class="card-body" id="annoucements-display">
-                        <h2 class="card-title" id="announcement-topic"></h2>
-                        <p class="card-text" id="announcement"></p>
+                        <h2 class="card-title text-center" id="announcement-topic"></h2>
+                        <p class="card-text text-center" id="announcement"></p>
                     </div>
                 </div>
             </div>
             <div class='col-3'>
                 <div class="card">
                     <div class="card-body">
-                        <div class="card-body">
+                        <div class="card-body text-center">
                             <p class="card-title" id="opponent"></p>
+                            <p class="card-title" id="opponentStats"></p>
                             <div class="card-body" id="opponentSelection"></div>
                         </div>
                     </div>

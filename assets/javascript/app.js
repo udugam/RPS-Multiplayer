@@ -64,6 +64,7 @@ function checkDatabase() {
             for (var key in players) {
                 (sessionStorage.getItem('ID')===key) ? playerInstance(players[key],numPlayers) : observerInstance(players[key],numPlayers)
             }
+            renderStats(players)            
             checkForSelections(players);
         }
     })
@@ -95,17 +96,18 @@ function renderPlayerWaiting(playerData) {
 }
 
 function renderPlayerPresent(playerData) {
-    $('#opponent').text(playerData.name)
+    $('#opponent').html("<h4>"+playerData.name+"</h4>")
 }
 
 //This function populates a player's information into the player area 
 function renderPlayerData(playerData) {
-    $('#player').text(playerData.name);
+    $('#player').html("<h4>"+playerData.name+"</h4>")
 }
 
 
 function startGame() {
     gameInProgress = true
+    $('#opponentSelection').empty()
     addSelectionButton();
     $('#announcement-topic').text("Choose Rock, Paper, or Scissors");
     $('#announcement').text("Use the left and right arrows to make your selection, then press Submit");
@@ -120,7 +122,7 @@ function storeID(id) {
 }
 
 function addSelectionButton() {
-    $('#playerOptions').append("<button type='button' id='playerSelection' class='btn btn-outline-secondary'>Select!</button>")
+    $('#selectionButton').html("<button type='button' id='playerSelection' class='btn btn-outline-secondary'>Select!</button>")
 }
 
 function playerInstance(playerData,numPlayers) {
@@ -164,7 +166,7 @@ function checkForSelections(players) {
 }
 
 function playerSelectionMade(playerData) {
-    (sessionStorage.getItem('ID')==playerData.id) ? null : $('#opponent').text(playerData.name+" has made a selection!")
+    (sessionStorage.getItem('ID')==playerData.id) ? null : $('#opponentSelection').text(playerData.name+" has made a selection!")
 }
 
 function determineResult(selectionsArray, playersData) {
@@ -211,6 +213,7 @@ function determineResult(selectionsArray, playersData) {
 
 function renderResults(winnerID, playersData) {
     var playerID = sessionStorage.getItem('ID');
+    renderStats(playersData);
     if (winnerID=='tie') {
         for (var key in playersData) {
             if(key == playerID) {
@@ -235,7 +238,6 @@ function renderResults(winnerID, playersData) {
         $('#announcement').text("Next Round comming up...");
         setTimeout(startGame,3000);
     }
-    console.log(winnerID,playersData);
 }
 
 function incrementWins(playerID, playersData) {
@@ -258,6 +260,26 @@ function incrementLosses(playerID, playersData) {
                 losses: losses,
                 selection: ""
             })
+        }
+    }
+}
+
+//This function displays the player's and opponent's stats
+function renderStats(playersData) {
+    var playerID = sessionStorage.getItem('ID');
+    for (var key in playersData) {
+        if(key == playerID) {
+            var wins = playersData[key].wins
+            var losses = playersData[key].losses
+            var ties = playersData[key].ties
+            
+            $('#playerStats').html(wins+" - "+losses+" - "+ties)
+        } else {
+            var wins = playersData[key].wins
+            var losses = playersData[key].losses
+            var ties = playersData[key].ties
+            
+            $('#opponentStats').html(wins+" - "+losses+" - "+ties)
         }
     }
 }
