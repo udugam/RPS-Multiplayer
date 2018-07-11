@@ -10,16 +10,50 @@ firebase.initializeApp(config);
 
 //Declare global variables
 var database = firebase.database();
-var gameInProgress = false; 
+var gameInProgress = false;
+var players; 
 
 var TIME_TO_NEXT_ROUND = 5000;
 
-//On pageload, check database for players
-checkDatabase(database);
+//on page load setup database listeners
+//This listener is for the players path
+database
+.ref('players')
+.on('value', function(snapshot) {
+    players = snapshot.val();
+    //If there are no players in the database, call emptyGame function
+    if(players===null) {
+        emptyGame();
+    } 
+    //Else there are players present in the database and the page elements should be updated
+    //based on the individual session storage id's of each instance of the page 
+    else {
+        var numPlayers = Object.keys(players).length;
+        for (var key in players) {
+            (sessionStorage.getItem('ID')===key) ? playerInstance(players[key],numPlayers) : observerInstance(players[key],numPlayers)
+        }
+        renderStats(players)            
+        checkForSelections(players);
+    }
+})
+
+//this listener is for the chatHistoryPath
+database
+.ref('chatHistory')
+.on('value', function(snapshot) {
+    var chatHistoryDiv = $('.chatHistory')
+    chatHistoryDiv.empty()
+    var chatHistoryData = snapshot.val()
+    for (var key in chatHistoryData) {
+        chatHistoryDiv.append("<p>"+chatHistoryData[key].name+": "+chatHistoryData[key].message+"</p>")
+    }
+})
+
 
 
 //Event Declarations
-$('body').on("keypress", "input", function(event) {
+//Event listener for when player's name is entered
+$('body').on("keypress", "#playerName", function(event) {
     if(event.which==13) {
         var name = $(this).val()
         var id = randomID();
@@ -39,6 +73,22 @@ $('body').on("keypress", "input", function(event) {
     }
 })
 
+//Listener for when player types a message
+$('body').on("keypress", "#playerMessage", function(event) {
+    if(event.which==13) {
+        var message = $(this).val()
+        var playerID = sessionStorage.getItem('ID');
+        
+        for (var key in players) {
+            if(key == playerID) {
+                sendMessage(message, players[key].name);
+                $(this).val('');
+            }
+        }
+    }
+})
+
+//Listener for player's selection
 $('body').on("click", "#playerSelection", function() {
     var selection = $('.carousel-item.active').attr('data-selection');
     var playerID = sessionStorage.getItem('ID');
@@ -49,29 +99,8 @@ $('body').on("click", "#playerSelection", function() {
     })
 })
 
+
 //Function Declarations
-function checkDatabase() {
-    database
-    .ref('players')
-    .on('value', function(snapshot) {
-        var players = snapshot.val();
-        //If there are no players in the database, call emptyGame function
-        if(players===null) {
-            emptyGame();
-        } 
-        //Else there are players present in the database and the page elements should be updated
-        //based on the individual session storage id's of each instance of the page 
-        else {
-            var numPlayers = Object.keys(players).length;
-            for (var key in players) {
-                (sessionStorage.getItem('ID')===key) ? playerInstance(players[key],numPlayers) : observerInstance(players[key],numPlayers)
-            }
-            renderStats(players)            
-            checkForSelections(players);
-        }
-    })
-}
-    
 function emptyGame() {
     renderPlayerNameInput();
     $('#announcement-topic').text("Game Empty");
@@ -81,7 +110,7 @@ function emptyGame() {
     
 //This function renders an name input box for a player to enter their name
 function renderPlayerNameInput() {
-    $('#player').html("<input id='player'>");
+    $('#player').html("<input id='playerName'>");
 }
     
 //This function renders messages to the page when a player is waiting for an opponent
@@ -285,6 +314,14 @@ function renderStats(playersData) {
             $('#opponentStats').html(wins+" - "+losses+" - "+ties)
         }
     }
+}
+
+//This function pushed a passed message to the database
+function sendMessage(message, name) {
+    database.ref('chatHistory').push({
+        name: name,
+        message: message
+    })
 }
 
 
