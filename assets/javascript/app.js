@@ -50,6 +50,16 @@ database
 })
 
 
+//this listener is for when the page sessions ends either on close of tab or navigation to another page.
+//If this happens then that means the user is leaving the game and both the session storage and databse storage 
+//for that user needs to be removed
+window.onbeforeunload = function() {
+    playerID = sessionStorage.getItem('ID')
+    sessionStorage.removeItem('ID');
+
+    database.ref('players/'+playerID).remove();
+}
+
 
 //Event Declarations
 //Event listener for when player's name is entered
