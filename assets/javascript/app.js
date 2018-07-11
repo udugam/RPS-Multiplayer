@@ -56,7 +56,7 @@ database
 window.onbeforeunload = function() {
     playerID = sessionStorage.getItem('ID')
     sessionStorage.removeItem('ID');
-
+    database.ref('chatHistory').remove();
     database.ref('players/'+playerID).remove();
 }
 
